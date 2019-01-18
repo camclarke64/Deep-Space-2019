@@ -7,6 +7,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -15,6 +16,16 @@ import frc.robot.drive.Autonomous;
 import frc.robot.drive.TeleopDrive;
 import frc.robot.PID.Xpid;
 import frc.robot.PID.Ypid;
+import frc.robot.RobotMap;
+import com.kauailabs.navx.frc.AHRS;
+
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.cameraserver.CameraServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -32,9 +43,11 @@ public class Robot extends TimedRobot {
   public static Xpid xpid = new Xpid();
   public static Ypid ypid = new Ypid();
 
+  public static boolean autoOp = false;
+
   public double[] table = new double[5];
 
-  private boolean auto = false;
+  AHRS ahrs;
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -46,6 +59,29 @@ public class Robot extends TimedRobot {
     ypid.controllerInit();
     xpid.xController.disable();
     ypid.yController.disable();
+    ahrs = new AHRS(SPI.Port.kMXP);
+
+    UsbCamera camera1 = CameraServer.getInstance().startAutomaticCapture(); //in the best case, we want everything about the camera in one thread - easier processing
+		camera1.setResolution(640, 480);
+    new Thread(() -> {
+			camera1.setFPS(30);
+			camera1.setExposureAuto();
+			
+			CvSink cvSink = CameraServer.getInstance().getVideo();
+			CvSource outputStream = CameraServer.getInstance().putVideo("Camera1", 640, 480); 
+			//set up a new camera with this name in SmartDashboard (Veiw->Add->CameraServer Stream Viewer)
+			
+			Mat source = new Mat();
+			Mat output = new Mat();
+			
+			while(!Thread.interrupted())
+			{
+				cvSink.grabFrame(source);
+				Imgproc.cvtColor(source, output, Imgproc.COLOR_BGR2RGB);
+				outputStream.putFrame(output);
+			}					
+		}).start(); //camera init + execution
+
   }
 
   /**
@@ -58,7 +94,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    
+    SmartDashboard.putNumber("ahrs_pid", ahrs.pidGet());
   }
 
   /**
@@ -93,6 +129,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     xpid.xController.disable();
     ypid.yController.disable();
+    RobotMap.TalonSet();
   }
   /**
    * This function is called periodically during operator control.
@@ -103,12 +140,24 @@ public class Robot extends TimedRobot {
     vision.displayTable();
     autonomous.chooser();
     teleopDrive.execute();
-    teleopDrive.automatedTurnToAngle();
+    teleopDrive.turnOnAxis.automatedTurnToAngle();
+    teleopDrive.getDiagnostics();
+    autonomous.driveAuto();
     if(oi.bumperL.get())
     {
       xpid.xController.disable();
       ypid.yController.disable();
+      teleopDrive.turnOnAxis.turnAngleController.disable();
+      teleopDrive.turnOnAxis.autoTurn = false;
+      autoOp = false;
     }
+  }
+
+  @Override
+  public void testInit() {
+    teleopDrive.turnOnAxis.turnAngleController.disable();
+    xpid.xController.disable();
+    ypid.yController.disable();
   }
 
   /**
@@ -116,5 +165,21 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+    vision.getTable();
+    vision.displayTable();
+    autonomous.chooser();
+    teleopDrive.execute();
+    teleopDrive.turnOnAxis.automatedTurnToAngle();
+    teleopDrive.getDiagnostics();
+    autonomous.driveAuto();
+    if(oi.bumperL.get())
+    {
+      xpid.xController.disable();
+      ypid.yController.disable();
+      teleopDrive.turnOnAxis.turnAngleController.disable();
+      teleopDrive.turnOnAxis.autoTurn = false;
+      autoOp = false;
+    }
   }
+
 }

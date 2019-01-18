@@ -32,43 +32,35 @@ public class Autonomous
         this.r = r;
     }
 
-/*    public void chooser()
-    {
-        if(!disable)
-        {
-            if(Robot.oi.buttonX.get())
-            {
-                disable = true;
-                driveX();
-            }
-            if(Robot.oi.buttonY.get())
-            {
-
-            }
-        }   
-    }
-*/
-
     public void chooser()
     {
-        driveX();
+        if(Robot.oi.buttonX.get())
+        {
+            driveX();
+            driveY();
+            Robot.teleopDrive.turnOnAxis.turnAngleController.enable();
+        }
     }
 
     public void driveX()
     {
         Robot.xpid.xController.enable();
         Robot.xpid.set(0);
+        Robot.autoOp = true;
     }
 
     public void driveY()
     {
         Robot.ypid.yController.enable();
         Robot.ypid.set(0);
+        Robot.autoOp = true;
     }
 
     public void driveAuto()
     {
-        
-        RobotMap.drive.driveCartesian(-y,x,0); //-x=right -y=forward
+        if(Robot.autoOp)
+        {
+            RobotMap.drive.driveCartesian(-y,x,0.7*Robot.teleopDrive.turnOnAxis.pidAngleOutput.getSpeed()); //x=right -y=forward
+        }
     }
 }

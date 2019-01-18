@@ -33,5 +33,10 @@ public class Vision
         SmartDashboard.putNumber("ty", visionTable[2]);
         SmartDashboard.putNumber("ta", visionTable[3]);
         SmartDashboard.putNumber("tl", visionTable[4]);
+
+        if(Robot.autoOp)
+        {
+            System.out.println(visionTable[1]+";"+visionTable[2]+";"+visionTable[3]);
+        }
     }
 }

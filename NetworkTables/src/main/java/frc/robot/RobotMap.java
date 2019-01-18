@@ -12,9 +12,12 @@ public class RobotMap
 
     public static MecanumDrive drive = new MecanumDrive(frontL, backL, frontR, backR);
 
-    public RobotMap()
+    public static void TalonSet()
     {
-
+        frontL.enableDeadbandElimination(true);
+        frontR.enableDeadbandElimination(true);
+        backL.enableDeadbandElimination(true);
+        backR.enableDeadbandElimination(true);
     }
 
 

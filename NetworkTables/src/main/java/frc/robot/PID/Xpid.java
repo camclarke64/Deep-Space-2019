@@ -5,12 +5,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.PIDController;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import edu.wpi.first.wpilibj.livewindow.*;
 
 //sideways
 public class Xpid implements PIDOutput
 {
     public PIDController xController;
     public XpidSource source;
+    public double xOutput;
 
     public Xpid()
     {
@@ -25,15 +27,16 @@ public class Xpid implements PIDOutput
     public void controllerInit()
     {
         source = new XpidSource();
-        xController = new PIDController(Constants.kP, Constants.kI, Constants.kD, source, this);
-        xController.setOutputRange(-0.7, 0.7);
+        xController = new PIDController(Constants.kPx, Constants.kIx, Constants.kDx, source, this);
+        xController.setOutputRange(-0.5, 0.5);
         xController.setAbsoluteTolerance(0.3);
         xController.disable();
+        LiveWindow.addActuator("DriveSystem", "xController", xController);
     }
 
     public void pidWrite(double output)
     {
-        SmartDashboard.putNumber("pidOutput", output);
+        xOutput = output;
         Robot.autonomous.setX(output);
     }
 }
