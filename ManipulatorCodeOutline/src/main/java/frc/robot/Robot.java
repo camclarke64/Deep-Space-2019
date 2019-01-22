@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.XboxController;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -23,6 +24,8 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+  Motor motorCode = new Motor();
+  XboxController xBox = new XboxController(2); //subject to change
 
   /**
    * This function is run when the robot is first started up and should be
@@ -86,6 +89,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    motorCode.limitSwitchCode();
+
+    //the following code was Douglas's idea. Not mine.
+    if (xBox.getAButton()) {
+      motorCode.talonOne.set(1);
+      motorCode.talonTwo.set(1);
+    }
   }
 
   /**
