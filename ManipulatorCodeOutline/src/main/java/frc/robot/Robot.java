@@ -89,13 +89,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    motorCode.limitSwitchCode();
-
-    //the following code was Douglas's idea. Not mine.
-    if (xBox.getAButton()) {
-      motorCode.talonOne.set(1);
-      motorCode.talonTwo.set(1);
-    }
+    
   }
 
   /**
